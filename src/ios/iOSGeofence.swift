@@ -1,5 +1,3 @@
-#import <Cordova/CDV.h>
-
 
 @objc(iOSGeofence) class iOSGeofence : CDVPlugin {
   @objc(echo:)

@@ -10,6 +10,7 @@
 			<param name="ios-package" value="iOSGeofence" />
 		</feature>
 	</config-file>
+	<source-file src="src/ios/iOSGeofence.h" />
 	<source-file src="src/ios/iOSGeofence.swift" />
 </platform>
 </plugin>

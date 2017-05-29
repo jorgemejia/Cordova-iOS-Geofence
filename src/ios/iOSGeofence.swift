@@ -117,16 +117,33 @@ var locationManager = CLLocationManager()
     )
   }
     
+    ///-----------------
+    @objc(requestPermission:)
+    
     func requestPermission(command: CDVInvokedUrlCommand) {
+        var pluginResult = CDVPluginResult(
+            status: CDVCommandStatus_ERROR
+        )
         // 1
         //locationManager.delegate = self
         // 2
         locationManager.requestAlwaysAuthorization()
         // 3
         loadAllGeotifications()
+        
+        pluginResult = CDVPluginResult(
+            status: CDVCommandStatus_OK,
+            messageAs: "Yes"
+        )
+        
+        self.commandDelegate!.send(
+            pluginResult,
+            callbackId: command.callbackId
+        )
+        
     }
     
-    func addGeotificationViewController(command: CDVInvokedUrlCommand) {
+    func addGeotification(command: CDVInvokedUrlCommand) {
         //controller.dismiss(animated: true, completion: nil)
         // 1
         //let clampedRadius = min(radius, locationManager.maximumRegionMonitoringDistance)

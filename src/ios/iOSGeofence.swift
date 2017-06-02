@@ -143,7 +143,14 @@ var locationManager = CLLocationManager()
         
     }
     
+     ///-----------------
+    @objc(addGeotification:)
     func addGeotification(command: CDVInvokedUrlCommand) {
+        
+        let obj = command.arguments[0] as? [JSONSerialization: Any]
+        //let coordinate = obj["coors"]
+        
+        print("Hola")
         //controller.dismiss(animated: true, completion: nil)
         // 1
         //let clampedRadius = min(radius, locationManager.maximumRegionMonitoringDistance)

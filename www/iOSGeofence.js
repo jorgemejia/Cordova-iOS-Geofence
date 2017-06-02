@@ -8,6 +8,10 @@ var Geofence = {
 
     requestPermission : function(arg0, success, error){
         exec(success, error, "iOSGeofence", "requestPermission", [arg0]);
+    },
+
+    addGeotification : function (arg0, success, error) {
+        exec(success, error, "iOSGeofence", "addGeotification", [arg0]);
     }
 };
 

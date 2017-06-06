@@ -11,6 +11,7 @@
 		</feature>
 	</config-file>
 	<source-file src="src/ios/iOSGeofence.h" />
+	<source-file src="src/ios/AppDelegate+iOSGeofence.swift" />
 	<source-file src="src/ios/iOSGeofence.swift" />
 </platform>
 </plugin>

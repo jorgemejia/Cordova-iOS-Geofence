@@ -146,19 +146,44 @@ var locationManager = CLLocationManager()
      ///-----------------
     @objc(addGeotification:)
     func addGeotification(command: CDVInvokedUrlCommand) {
+       
+        let params = command.arguments[0] as? NSArray
         
-        let obj = command.arguments[0] as? [JSONSerialization: Any]
-        //let coordinate = obj["coors"]
+        print(params)
         
-        print("Hola")
-        //controller.dismiss(animated: true, completion: nil)
-        // 1
-        //let clampedRadius = min(radius, locationManager.maximumRegionMonitoringDistance)
-        //let geotification = Geotification(coordinate: coordinate, radius: clampedRadius, identifier: identifier, note: note, eventType: eventType)
-        //add(geotification: geotification)
-        // 2
-        //startMonitoring(geotification: geotification)
-        //saveAllGeotifications()
+        if let params = command.arguments[0] as? [[String:Any]] {
+            let lat = params[0]["latitude"] as? Double
+            let lon = params[0]["longitude"] as? Double
+            let radius = params[0]["radius"] as? Double
+            let note = params[0]["note"] as? String
+            let type = params[0]["type"] as? String
+            let identifier = params[0]["identifier"] as? String
+            
+            let eventType: EventType = (type == "onEntry") ? .onEntry : .onExit
+            
+            let coors = CLLocationCoordinate2DMake(lat!, lon!)
+            let coordinate = CLLocationCoordinate2D(latitude: lat!, longitude: lon!)
+            
+            let clampedRadius = min(radius as! Double, locationManager.maximumRegionMonitoringDistance)
+            
+            let geotification = Geotification(coordinate: coors, radius: radius!, identifier: identifier!, note: note!, eventType: eventType)
+            
+            add(geotification: geotification)
+            startMonitoring(geotification: geotification)
+            saveAllGeotifications()
+    
+        }
+        
+        
+    }
+    
+    func saveAllGeotifications() {
+        var items: [Data] = []
+        for geotification in geotifications {
+            let item = NSKeyedArchiver.archivedData(withRootObject: geotification)
+            items.append(item)
+        }
+        UserDefaults.standard.set(items, forKey: PreferencesKeys.savedItems)
     }
     
     // MARK: Loading and saving functions
@@ -175,7 +200,56 @@ var locationManager = CLLocationManager()
         geotifications.append(geotification)
         //mapView.addAnnotation(geotification)
         //addRadiusOverlay(forGeotification: geotification)
-        //updateGeotificationsCount()
+        updateGeotificationsCount()
+    }
+    
+    func region(withGeotification geotification: Geotification) -> CLCircularRegion {
+        // 1
+        let region = CLCircularRegion(center: geotification.coordinate, radius: geotification.radius, identifier: geotification.identifier)
+        // 2
+        region.notifyOnEntry = (geotification.eventType == .onEntry)
+        region.notifyOnExit = !region.notifyOnEntry
+        return region
+    }
+    
+    func startMonitoring(geotification: Geotification) {
+        // 1
+        if !CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+            showAlert(withTitle:"Error", message: "Geofencing is not supported on this device!")
+            return
+        }
+        // 2
+        if CLLocationManager.authorizationStatus() != .authorizedAlways {
+            showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geotify permission to access the device location.")
+        }
+        // 3
+        let region = self.region(withGeotification: geotification)
+        // 4
+        locationManager.startMonitoring(for: region)
+    }
+    
+    func stopMonitoring(geotification: Geotification) {
+        for region in locationManager.monitoredRegions {
+            guard let circularRegion = region as? CLCircularRegion, circularRegion.identifier == geotification.identifier else { continue }
+            locationManager.stopMonitoring(for: circularRegion)
+        }
+    }
+    
+    func showAlert(withTitle title: String?, message: String?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        alert.addAction(action)
+        self.viewController?.present(alert, animated: true, completion: nil)
+    }
+    
+    func updateGeotificationsCount() {
+        //title = "Geotifications (\(geotifications.count))"
+        //navigationItem.rightBarButtonItem?.isEnabled = (geotifications.count < 20)
+        print(geotifications.count)
     }
     
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
